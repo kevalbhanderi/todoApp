@@ -4,7 +4,7 @@ const session = require('express-session');
 const { render } = require('ejs');
 const connection = require('./database');
 const { connect } = require('./database');
-const { request } = require('express');
+const { request, response } = require('express');
 const { check, validationResult } = require('express-validator');
 const sequelize = require('sequelize');
 const { Sequelize, json } = require('sequelize');
@@ -41,17 +41,12 @@ let date = [];
 app.get('/', function (req, res) {
     let sessionUser = req.session.username;
     connection.query(`SELECT title, status, date FROM tododata where users_username = '${sessionUser}'`, function (err, result) {
-        console.log(result);
         if(err){
             throw err;
         }
         res.render('home', {items: result});
     })
-    // res.render('home', {
-    //     todoTitle: title,
-    //     todoStatus: status,
-    //     todoDate: date
-    // });
+
 })
 
 // Home Page Data
@@ -73,13 +68,10 @@ app.post('/', function (req, res) {
         if (err) {
             throw err;
         }
-        res.render('home', {
-            todoTitle: title,
-            todoStatus: status,
-            todoDate: date
-        });
-    })
-})
+        console.log(data);
+        res.render('home', {items: data});
+    });
+});
 
 
 
@@ -147,7 +139,7 @@ app.post('/login', (req, res) => {
 
     if (username && password) {
         connection.query(`SELECT username, password FROM users WHERE username = '${username}' and password = '${password}'`, function (err, result) {
-            console.log(result);
+            
             if (Object.values(result).length >= 1) {
                 req.session.loggedin = true;
                 req.session.username = username;
@@ -171,6 +163,40 @@ app.get('/logout', (req, res) => {
     req.session.destroy();
     res.redirect('/login');
 })
+
+
+
+
+// Edit Data
+app.get('/edit', (req, res) => {
+    res.render('edit');
+})
+
+
+// app.get('/delete/:id', (req, res) => {
+    
+//     let user = req.session.username;
+//     console.log(user)
+
+//     let todoId = `SELECT todoid FROM tododata WHERE users_username='${user}'`;
+//     connection.query(todoId, function(err, id) {
+//         if(err){
+//             throw err;
+//         }
+//         console.log(id);
+//     })
+
+//     let daleteData = `DELETE FROM tododata WHERE todoid = '${todoId}'`;
+//     connection.query(daleteData, function (err, result) {
+//         if(err){
+//             throw err;
+//         } else {
+//             obj = {id: result};
+//             response.render('home', obj);
+//         }
+        
+//     })
+// })
 
 
 
