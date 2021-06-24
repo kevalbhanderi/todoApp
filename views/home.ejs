@@ -1,0 +1,93 @@
+<%- include("base") -%>
+
+    <% if (locals.session.loggedin) { %>
+        <%- locals.session.username %>
+        <div class="container pt-5">
+            <div class="row mt-5">
+                <div class="col-lg-4 mx-auto">
+                    <div class="alert alert-info">
+                        <h2>Add TODO</h2>
+                    </div>
+                    <div class="p-4">
+                        <form action="/" method="POST">
+                            <label for="title">Title :</label>
+                            <input type="text" name="title"><br><br>
+                            <label for="status">Status :</label>
+                            <select name="status" id="status">
+                                <option value="pending">PENDING</option>
+                                <option value="completed">COMPLETED</option>
+                            </select><br><br>
+                            <label for="">Enter Date :</label>
+                            <input type="date" name="date" placeholder="dd-mm-yyyy" min="1900-01-01" max="2050-12-31">
+                            <br><br>
+                            <input type="submit" value="ADD" class="btn btn-info">
+                            <!-- <input type="submit" value="My Todo List" class="btn btn-info" style="margin-left: 60px;"> -->
+                        </form>
+                    </div>
+                </div>
+                <div class="col">
+                    <div class="border">
+                        <% if (items.lenght==0) { %>
+                            <div class="pt-3">
+                                <br><br><br>
+                                <div class="alert alert-info text-center">
+                                    <p class="display-4">No Todos</p>
+                                </div>
+                                <br><br><br>
+                            </div>
+                            <% } else { %>
+                                <div>
+                                    <table class="table">
+                                        <thead>
+                                            <tr>
+                                                <th>No</th>
+                                                <th>Title</th>
+                                                <th>Status</th>
+                                                <th>Date</th>
+                                            </tr>
+                                        </thead>
+
+                                        <tbody>
+                                            <% for (let i=0; i<items.length; i++){ %>
+                                                <tr>
+                                                    <td>
+                                                        <%- [i+1] %>
+                                                    </td>
+                                                    <td>
+                                                        <%- items[i].title %>
+                                                    </td>
+                                                    <td>
+                                                        <%- items[i].status %>
+                                                    </td>
+                                                    <td>
+                                                        <%- items[i].date %>
+                                                    </td>
+                                                    <td><a href="#" class="btn btn-success">Edit</a> </td>
+                                                    <td><a href="#" class="btn btn-danger">Delete</a> </td>
+                                                </tr>
+                                                <% } %>
+                                        </tbody>
+
+                                    </table>
+                                </div>
+                                <% } %>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <% } else { %>
+
+            <div class="jumbotron">
+                <h1 class="display-4">Please Login ! Otherwise</h1>
+                <p class="lead">This is a simple hero unit, a simple jumbotron-style component for calling extra
+                    attention to featured content or information.</p>
+                <hr class="my-4">
+                <p>It uses utility classes for typography and spacing to space content out within the larger container.
+                </p>
+                <p class="lead">
+                    <a class="btn btn-primary btn-lg" href="#" role="button">Go to Hell</a>
+                </p>
+            </div>
+
+            <% } %>

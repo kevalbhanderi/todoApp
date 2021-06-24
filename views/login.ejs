@@ -1,0 +1,27 @@
+<%- include("base") -%>
+
+    <div class="container pt-5">
+        <div class="col-lg-4 mx-auto mt-5">
+            <div class="alert alert-info">
+                <h2>Login Here</h2>
+            </div>
+            <% if(locals.error_msg) { %>
+                <div class="alert alert-danger" role="alert">
+                    <%= error_msg %>
+                </div>
+                <% } %>
+                    <div class="p-4">
+                        <form action="" method="POST">
+
+                            <label for="username">Username : </label>
+                            <input type="text" name="username" id="username"><br><br>
+
+                            <label for="password">Password : </label>
+                            <input type="password" name="password" id="password"><br><br>
+
+                            <input type="submit" value="Login" class="btn btn-info"><br>
+                            
+                        </form>
+                    </div>
+        </div>
+    </div>
