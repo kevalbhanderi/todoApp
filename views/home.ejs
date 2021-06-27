@@ -1,7 +1,7 @@
 <%- include("base") -%>
 
     <% if (locals.session.loggedin) { %>
-        <%- locals.session.username %>
+
         <div class="container pt-5">
             <div class="row mt-5">
                 <div class="col-lg-4 mx-auto">
@@ -21,7 +21,6 @@
                             <input type="date" name="date" placeholder="dd-mm-yyyy" min="1900-01-01" max="2050-12-31">
                             <br><br>
                             <input type="submit" value="ADD" class="btn btn-info">
-                            <!-- <input type="submit" value="My Todo List" class="btn btn-info" style="margin-left: 60px;"> -->
                         </form>
                     </div>
                 </div>
@@ -51,7 +50,7 @@
                                             <% for (let i=0; i<items.length; i++){ %>
                                                 <tr>
                                                     <td>
-                                                        <%- [i+1] %>
+                                                        <%- items[i].todoid %>
                                                     </td>
                                                     <td>
                                                         <%- items[i].title %>
@@ -62,10 +61,12 @@
                                                     <td>
                                                         <%- items[i].date.toDateString() %>
                                                     </td>
-                                                    
-                                                    <td><a href="edit" class="btn btn-success">Edit</a> </td>
-                                                    <td><a href="delete/:id" class="btn btn-danger">Delete</a> </td>
-                                                    
+
+                                                    <td><a href="/edit/<%= items[i].todoid %>" class="btn btn-success">Edit</a> </td>
+                                                    <td><a href="/delete/<%= items[i].todoid %>" class="btn btn-danger">Delete</a> </td>
+                                                    <!-- <td><a href="/edit?id=<%= items[i].todoid %>" class="btn btn-success">Edit</a> </td> -->
+                                                    <!-- <td><a href="/delete?id=<%= items[i].todoid %>" class="btn btn-danger">Delete</a> </td> -->
+
                                                 </tr>
                                                 <% } %>
                                         </tbody>

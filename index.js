@@ -10,10 +10,14 @@ const sequelize = require('sequelize');
 const { Sequelize, json } = require('sequelize');
 let userRouter = require('./routes/userdata');
 const { Session } = require('express-session');
+const { rows } = require('mssql');
+const { param } = require('./routes/userdata');
 
 
 const app = express();
 app.use(bodyParser.urlencoded({ extended: true }));
+app.use(bodyParser.json());
+
 app.use(session({
     secret: 'secret',
     resave: true,
@@ -32,6 +36,17 @@ app.set('views', 'views/');
 
 
 
+// Session Handling
+// let sess;
+// app.get('/', (req, res) => {
+//     sess = req.session;
+//     if(sess.username){
+//         return res.render('home');
+//     }
+//     res.render('login');
+// })
+
+
 
 let title = [];
 let status = [];
@@ -40,13 +55,12 @@ let date = [];
 // Home Page
 app.get('/', function (req, res) {
     let sessionUser = req.session.username;
-    connection.query(`SELECT title, status, date FROM tododata where users_username = '${sessionUser}'`, function (err, result) {
-        if(err){
+    connection.query(`SELECT todoid, title, status, date FROM tododata where users_username = '${sessionUser}'`, function (err, result) {
+        if (err) {
             throw err;
         }
-        res.render('home', {items: result});
+        res.render('home', { items: result });
     })
-
 })
 
 // Home Page Data
@@ -64,12 +78,16 @@ app.post('/', function (req, res) {
     date.push(todoDate);
 
     let sqltodo = `insert into tododata values (0, '${todoTitle}', '${todoStatus}', '${todoDate}', '${sessionUser}')`;
-    connection.query(sqltodo, function (err, data) {
+    connection.query(sqltodo, function (err) {
         if (err) {
             throw err;
         }
-        console.log(data);
-        res.render('home', {items: data});
+        connection.query(`SELECT todoid, title, status, date FROM tododata where users_username = '${sessionUser}'`, function (err, result) {
+            if (err) {
+                throw err;
+            }
+            res.render('home', { items: result });
+        })
     });
 });
 
@@ -89,27 +107,22 @@ app.post('/signup', function dataPost(req, res) {
     let username = req.body.username;
     let email = req.body.email;
     let password = req.body.password;
-    let err = '';
-
+    let error_msg = '';
 
     if (username && email && password) {
         let databaseUser = `SELECT username from users where username = '${username}'`;
-        if (!err) {
-            error_msg = 'Username is Already Exist';
-            return res.render('signup', { error_msg: error_msg });
-        }
-
-        let sql = `insert into users values (0, '${username}', '${email}', '${password}')`;
-        connection.query(databaseUser, function (err) {    
-            try {
+        connection.query(databaseUser, function (err) {
+            if (err) {
+                let sql = `insert into users values (0, '${username}', '${email}', '${password}')`;
                 connection.query(sql, function (err) {
                     if (err) {
                         throw err;
                     }
                     res.redirect('/login');
                 })
-            } catch (err) {
-                console.log(err);
+            } else {
+                error_msg = 'Username is Already Exist';
+                return res.render('signup', { error_msg: error_msg });
             }
         })
 
@@ -139,7 +152,7 @@ app.post('/login', (req, res) => {
 
     if (username && password) {
         connection.query(`SELECT username, password FROM users WHERE username = '${username}' and password = '${password}'`, function (err, result) {
-            
+
             if (Object.values(result).length >= 1) {
                 req.session.loggedin = true;
                 req.session.username = username;
@@ -167,36 +180,57 @@ app.get('/logout', (req, res) => {
 
 
 
-// Edit Data
-app.get('/edit', (req, res) => {
-    res.render('edit');
+// Delete Data
+app.get('/delete/:todoid', (req, res, next) => {
+    let sessionUser = req.session.username;
+    connection.query(`DELETE FROM tododata WHERE todoid=?`, [req.params.todoid], (err, rows) => {
+        if (!err) {
+            connection.query(`SELECT todoid, title, status, date FROM tododata where users_username = '${sessionUser}'`, function (err, result) {
+                if (err) {
+                    throw err;
+                }
+                res.render('home', { items: result });
+            })
+        } else {
+            console.log(err);
+        }
+    })
 })
 
 
-// app.get('/delete/:id', (req, res) => {
-    
-//     let user = req.session.username;
-//     console.log(user)
 
-//     let todoId = `SELECT todoid FROM tododata WHERE users_username='${user}'`;
-//     connection.query(todoId, function(err, id) {
-//         if(err){
-//             throw err;
-//         }
-//         console.log(id);
-//     })
+// Edit Data
+app.get('/edit/:todoid', (req, res, next) => {
 
-//     let daleteData = `DELETE FROM tododata WHERE todoid = '${todoId}'`;
-//     connection.query(daleteData, function (err, result) {
-//         if(err){
-//             throw err;
-//         } else {
-//             obj = {id: result};
-//             response.render('home', obj);
-//         }
-        
-//     })
-// })
+    connection.query(`SELECT todoid, title, status, date FROM tododata WHERE todoid=?`, [req.params.todoid], function (err, result) {
+        if (err) {
+            throw err;
+        } else {
+            res.render('edit', { data: result[0] });
+        }
+    })
+})
+
+app.post('/edit/:todoid', function (req, res, next) {
+    let sessionUser = req.session.username;
+    let todoTitle = req.body.title;
+    let todoStatus = req.body.status;
+    let todoDate = req.body.date;
+    let todoid = req.params.todoid;
+
+    connection.query(`UPDATE tododata SET title='${todoTitle}', status='${todoStatus}', date='${todoDate}' WHERE todoid = '${todoid}'`, function (err, result) {
+        if (err) {
+            throw err;
+        }
+        connection.query(`SELECT todoid, title, status, date FROM tododata where users_username = '${sessionUser}'`, function (err, result) {
+            if (err) {
+                throw err;
+            }
+            res.render('home', { items: result });
+        })
+    })
+})
+
 
 
 
